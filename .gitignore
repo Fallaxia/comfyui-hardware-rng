@@ -1,0 +1,28 @@
+# --- Build artefacts: Windows -------------------------------------------
+Windows/*.obj
+Windows/*.exp
+Windows/*.lib
+Windows/*.pdb
+Windows/*.ilk
+# The DLL is a binary; ship it via GitHub Releases, not in the tree.
+Windows/*.dll
+
+# --- Build artefacts: Linux kernel module -------------------------------
+Device/*.o
+Device/*.ko
+Device/*.mod
+Device/*.mod.c
+Device/*.mod.o
+Device/*.symvers
+Device/*.order
+Device/.*.cmd
+Device/.tmp_versions/
+
+# --- Entropy pools ------------------------------------------------------
+# Multi-GB binaries have no business in git. Generate locally or fetch
+# from a release asset.
+*.dat
+
+# --- Python -------------------------------------------------------------
+__pycache__/
+*.py[cod]
