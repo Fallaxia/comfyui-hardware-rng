@@ -89,13 +89,40 @@ someone else produces the identical image on their computer.
 
 ### Step 1 — Install the ComfyUI node (all platforms)
 
-Copy the `ComfyUI-HardwareRNG` folder into your ComfyUI custom nodes directory:
+Clone this repository directly into your ComfyUI custom nodes directory:
+
+```bash
+cd ComfyUI/custom_nodes
+git clone https://github.com/YOURNAME/comfyui-hardware-rng.git
+```
+
+That is all — the node files sit at the repository root, so the cloned folder
+*is* the node folder:
 
 ```
-ComfyUI/custom_nodes/ComfyUI-HardwareRNG/
-    __init__.py
-    xeon_rng_node.py
+ComfyUI/custom_nodes/comfyui-hardware-rng/
+    __init__.py            <- node registration
+    xeon_rng_node.py       <- the node itself
+    rdseed_win.dll         <- prebuilt Windows helper (see step 2b)
+    Device/                <- Linux kernel module source
+    Windows/               <- Windows helper source
+    tools/                 <- entropy pool generator
 ```
+
+`Device/`, `Windows/` and `tools/` are ignored by ComfyUI (they contain no
+`__init__.py`); they are there so you can build from source without a second
+download.
+
+To update later:
+
+```bash
+cd ComfyUI/custom_nodes/comfyui-hardware-rng
+git pull
+```
+
+> No git? Download the ZIP from the green **Code** button, extract it, and put
+> the extracted folder into `ComfyUI/custom_nodes/`. Make sure `__init__.py`
+> ends up directly inside that folder, not one level deeper.
 
 Then **restart ComfyUI completely** — restart the server process, not just the
 browser tab. ComfyUI only reads custom nodes at startup.
@@ -203,26 +230,58 @@ You have to log out and back in for the new group membership to apply.
 
 ---
 
-### Step 2b — Windows: build the helper DLL
+### Step 2b — Windows: the helper DLL
+
+**A prebuilt 64-bit `rdseed_win.dll` already ships in this repository**, at the
+root next to `xeon_rng_node.py`. If you cloned the repo as described in step 1,
+there is nothing to do here — skip ahead.
+
+Verify it if you like:
+
+```cmd
+certutil -hashfile rdseed_win.dll SHA256
+```
+
+and compare against the checksum published on the Releases page.
+
+#### Building it yourself (optional)
 
 Python cannot execute CPU instructions directly, so a small DLL does it.
 
-**With Visual Studio Build Tools** (open the "Developer Command Prompt"):
+**With Visual Studio Build Tools.** Open the **x64 Native Tools Command Prompt
+for VS** from the Start menu (not the plain "Developer Command Prompt" — that
+one may default to 32-bit, and ComfyUI's Python is 64-bit):
 ```cmd
 cd Windows
-cl /O2 /LD rdseed_win.c /Fe:rdseed_win.dll
+cl /O2 /MT /Gy /Brepro /guard:cf /LD rdseed_win.c /Fe:rdseed_win.dll ^
+   /link /OPT:REF /OPT:ICF /DYNAMICBASE /NXCOMPAT /CETCOMPAT
 ```
+`/MT` links the C runtime statically, so users do not need a Visual C++
+Redistributable installed.
 
 **With MinGW-w64:**
 ```cmd
 cd Windows
-gcc -O2 -shared -o rdseed_win.dll rdseed_win.c
+gcc -O2 -mrdseed -shared -o rdseed_win.dll rdseed_win.c
 ```
+> GCC only exposes the RDSEED intrinsics when `-mrdseed` is given; without it
+> the build fails. MSVC needs no such flag. This does not restrict which CPUs
+> the DLL runs on — support is still checked at runtime via CPUID.
 
-Then copy `rdseed_win.dll` next to the node file:
-
+Verify the result:
+```cmd
+dumpbin /headers rdseed_win.dll | findstr machine
+dumpbin /exports rdseed_win.dll
+dumpbin /dependents rdseed_win.dll
 ```
-ComfyUI/custom_nodes/ComfyUI-HardwareRNG/rdseed_win.dll
+Expected: `x64`; both `get_rdseed_buffer` and `rdseed_available` exported; and
+`KERNEL32.dll` as the only dependency. If `VCRUNTIME140.dll` shows up, `/MT`
+did not take effect.
+
+Then copy the DLL to the repository root, next to `xeon_rng_node.py`:
+
+```cmd
+copy rdseed_win.dll ..\rdseed_win.dll
 ```
 
 Restart ComfyUI. If the DLL is missing or fails to load, the console prints a
@@ -392,11 +451,3 @@ A few implementation details that matter in practice:
 
 GPL-2.0. The Linux kernel module must be GPL-licensed to use kernel APIs, and
 the rest of the project follows suit for consistency. See [LICENSE](LICENSE).
-
-As a special exception, the copyright holder gives permission to link the
-code of this program with the Microsoft Visual C++ runtime library (or a
-modified version of it) and to distribute the resulting executable, without
-this constituting a violation of the GPL.
-
-SHA256-Hash rdseed_win.dll:
-87088a9c3268dfcb468d553902bc5567e34f3842b8ea39adba97879568e84ca1

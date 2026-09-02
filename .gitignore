@@ -1,8 +1,8 @@
 # --- Windows build artefacts -------------------------------------------
-# The compiled DLL is deliberately NOT ignored when it sits in
-# ComfyUI-HardwareRNG/ - that way a plain "git clone" into custom_nodes
-# gives Windows users a working node with no extra steps. It is ~150 KB.
-# Only intermediate output is excluded here.
+# The compiled DLL at the repository ROOT is deliberately NOT ignored:
+# the node files live at the root, so a plain "git clone" into custom_nodes
+# gives Windows users a working node with no extra steps. It is ~100 KB.
+# Only the build directory copy and intermediate output are excluded here.
 Windows/*.obj
 Windows/*.exp
 Windows/*.lib
