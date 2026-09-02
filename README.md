@@ -392,3 +392,11 @@ A few implementation details that matter in practice:
 
 GPL-2.0. The Linux kernel module must be GPL-licensed to use kernel APIs, and
 the rest of the project follows suit for consistency. See [LICENSE](LICENSE).
+
+As a special exception, the copyright holder gives permission to link the
+code of this program with the Microsoft Visual C++ runtime library (or a
+modified version of it) and to distribute the resulting executable, without
+this constituting a violation of the GPL.
+
+SHA256-Hash rdseed_win.dll:
+87088a9c3268dfcb468d553902bc5567e34f3842b8ea39adba97879568e84ca1

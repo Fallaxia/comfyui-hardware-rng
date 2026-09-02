@@ -1,26 +1,29 @@
-# --- Build artefacts: Windows -------------------------------------------
+# --- Windows build artefacts -------------------------------------------
+# The compiled DLL is deliberately NOT ignored when it sits in
+# ComfyUI-HardwareRNG/ - that way a plain "git clone" into custom_nodes
+# gives Windows users a working node with no extra steps. It is ~150 KB.
+# Only intermediate output is excluded here.
 Windows/*.obj
 Windows/*.exp
 Windows/*.lib
 Windows/*.pdb
 Windows/*.ilk
-# The DLL is a binary; ship it via GitHub Releases, not in the tree.
 Windows/*.dll
 
-# --- Build artefacts: Linux kernel module -------------------------------
+# --- Linux kernel module build artefacts --------------------------------
 Device/*.o
 Device/*.ko
 Device/*.mod
 Device/*.mod.c
 Device/*.mod.o
-Device/*.symvers
-Device/*.order
+Device/Module.symvers
+Device/modules.order
 Device/.*.cmd
 Device/.tmp_versions/
 
 # --- Entropy pools ------------------------------------------------------
-# Multi-GB binaries have no business in git. Generate locally or fetch
-# from a release asset.
+# Multi-GB binaries have no business in git history. Ship them as release
+# assets; generate small ones locally with tools/generate_pool.py.
 *.dat
 
 # --- Python -------------------------------------------------------------
