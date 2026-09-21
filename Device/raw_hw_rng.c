@@ -24,7 +24,14 @@
 #include <linux/delay.h>         /* usleep_range */
 #include <linux/sched.h>         /* cond_resched */
 #include <linux/sched/signal.h>  /* signal_pending */
-#include <asm/processor.h>       /* cpuid(), cpuid_count() */
+#include <asm/processor.h>        /* Basis-Header und Fallback für ältere Kernel */
+
+/* Dynamische Header-Auflösung für Kernel ab ~7.x */
+#if defined(__has_include)
+#  if __has_include(<asm/cpuid/api.h>)
+#    include <asm/cpuid/api.h>    /* cpuid() / cpuid_count() */
+#  endif
+#endif
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("J.C.A. Greve");
